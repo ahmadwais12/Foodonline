@@ -23,6 +23,7 @@ const orderRoutes = require('./routes/order.routes');
 const reviewRoutes = require('./routes/review.routes');
 const adminRoutes = require('./routes/admin.routes');
 const driverRoutes = require('./routes/driver.routes');
+const imageRoutes = require('./routes/image.routes');
 
 // Initialize app
 const app = express();
@@ -118,6 +119,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/driver', driverRoutes);
+app.use('/api/images', imageRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

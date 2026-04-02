@@ -7,6 +7,10 @@ interface ApiResponse<T> {
   data?: T;
 }
 
+interface ProfileResponse {
+  user: UserData;
+}
+
 interface UserData {
   id: number;
   email: string;
@@ -19,15 +23,16 @@ interface UserData {
 class UserService {
   async getProfile(): Promise<AuthUser> {
     try {
-      const response = await apiClient.get<ApiResponse<UserData>>('/users/profile');
+      const response = await apiClient.get<ApiResponse<ProfileResponse>>('/users/profile');
       
-      if (response.data.status === 'success' && response.data.data) {
+      if (response.data.status === 'success' && response.data.data?.user) {
+        const user = response.data.data.user;
         return {
-          id: response.data.data.id.toString(),
-          email: response.data.data.email,
-          username: response.data.data.username,
-          role: response.data.data.role,
-          avatar: response.data.data.avatar_url,
+          id: user.id.toString(),
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          avatar: user.avatar_url,
         };
       } else {
         throw new Error(response.data.message || 'Failed to fetch user profile');
@@ -37,17 +42,18 @@ class UserService {
     }
   }
 
-  async updateProfile(userData: Partial<{ username: string; avatar_url: string }>): Promise<AuthUser> {
+  async updateProfile(userData: Partial<{ username: string; avatar_url?: string; phone?: string; currentPassword?: string; newPassword?: string }>): Promise<AuthUser> {
     try {
-      const response = await apiClient.put<ApiResponse<UserData>>('/users/profile', userData);
+      const response = await apiClient.put<ApiResponse<ProfileResponse>>('/users/profile', userData);
       
-      if (response.data.status === 'success' && response.data.data) {
+      if (response.data.status === 'success' && response.data.data?.user) {
+        const user = response.data.data.user;
         return {
-          id: response.data.data.id.toString(),
-          email: response.data.data.email,
-          username: response.data.data.username,
-          role: response.data.data.role,
-          avatar: response.data.data.avatar_url,
+          id: user.id.toString(),
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          avatar: user.avatar_url,
         };
       } else {
         throw new Error(response.data.message || 'Failed to update profile');
@@ -118,6 +124,18 @@ class UserService {
       }
     } catch (error: any) {
       throw new Error(error.response?.data?.message || error.message || 'Failed to set default address');
+    }
+  }
+
+  async deleteAccount(): Promise<void> {
+    try {
+      const response = await apiClient.delete<ApiResponse<void>>('/users/account');
+      
+      if (response.data.status !== 'success') {
+        throw new Error(response.data.message || 'Failed to delete account');
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Failed to delete account');
     }
   }
 }

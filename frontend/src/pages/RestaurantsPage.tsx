@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RestaurantCard from '@/components/restaurant/RestaurantCard';
-import LoadingSpinner from '@/components/ui/loading-spinner';
+import { RestaurantCardSkeletonGrid } from '@/components/restaurant/RestaurantCardSkeleton';
 import { useLanguage } from '@/contexts/LanguageContext'; // Import the useLanguage hook
 
 export default function RestaurantsPage() {
@@ -135,9 +135,7 @@ export default function RestaurantsPage() {
 
         {/* Results */}
         {loading ? (
-          <div className="flex justify-center py-20">
-            <LoadingSpinner size="lg" />
-          </div>
+          <RestaurantCardSkeletonGrid count={9} />
         ) : restaurants.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">{t('no_restaurants_found')}</p>

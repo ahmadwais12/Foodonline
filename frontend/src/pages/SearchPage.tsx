@@ -9,7 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import RestaurantCard from '@/components/restaurant/RestaurantCard';
-import LoadingSpinner from '@/components/ui/loading-spinner';
+import FoodItemCard from '@/components/restaurant/FoodItemCard';
+import { RestaurantCardSkeletonGrid } from '@/components/restaurant/RestaurantCardSkeleton';
+import { FoodItemCardSkeletonGrid } from '@/components/restaurant/FoodItemCardSkeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SearchPage() {
@@ -320,9 +322,11 @@ export default function SearchPage() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <LoadingSpinner size="lg" />
-          </div>
+          activeTab === 'restaurants' ? (
+            <RestaurantCardSkeletonGrid count={6} />
+          ) : (
+            <FoodItemCardSkeletonGrid count={8} />
+          )
         ) : searchQuery ? (
           <>
             {activeTab === 'restaurants' ? (

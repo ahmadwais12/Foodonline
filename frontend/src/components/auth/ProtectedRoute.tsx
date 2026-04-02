@@ -1,68 +1,32 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import LoadingSpinner from '@/components/ui/loading-spinner';
-import { setupAutoLogout } from '@/lib/security';
 
-export default function ProtectedRoute({ 
-  children,
-  requiredRole
-}: { 
+interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
-}) {
+  requiredRole?: 'admin' | 'customer' | 'restaurant_owner' | 'delivery_rider';
+}
+
+export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
 
-  useEffect(() => {
-    // Setup auto logout listener
-    setupAutoLogout(() => {
-      navigate('/login');
-    });
-  }, [navigate]);
-
-  useEffect(() => {
-    const checkAuthorization = async () => {
-      if (!loading) {
-        if (!user) {
-          // Redirect to login if not authenticated
-          navigate('/login', { 
-            state: { from: location.pathname },
-            replace: true 
-          });
-        } else if (requiredRole) {
-          // Check role-based access if required
-          // For admin role, we check if user has admin role
-          if (requiredRole === 'admin' && user.role === 'admin') {
-            setIsAuthorized(true);
-          } else {
-            // For other roles or if not authorized
-            navigate('/');
-          }
-        } else {
-          // User is authenticated and no specific role required
-          setIsAuthorized(true);
-        }
-        setAuthLoading(false);
-      }
-    };
-
-    checkAuthorization();
-  }, [user, loading, requiredRole, navigate, location.pathname]);
-
-  if (loading || authLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (!isAuthorized) {
-    return null;
+  if (!user) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  if (requiredRole && user.role !== requiredRole) {
+    // Redirect to home if user doesn't have the required role
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

@@ -40,7 +40,14 @@ export default function LoginPage() {
         description: t('login_success'),
       });
       
-      navigate(from);
+      // Redirect based on role
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (user.role === 'driver') {
+        navigate('/driver');
+      } else {
+        navigate(from);
+      }
     } catch (error: any) {
       console.error('Login failed:', error);
       toast({
@@ -131,13 +138,13 @@ export default function LoginPage() {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+                    {showPassword ? (<Eye className="h-5 w-5 text-gray-500 hover:text-primary transition-colors" />
                     ) : (
-                      <Eye className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+                      <EyeOff className="h-5 w-5 text-gray-500 hover:text-primary transition-colors" />
                     )}
                   </button>
                 </div>

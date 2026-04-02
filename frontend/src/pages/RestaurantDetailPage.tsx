@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import MenuItemCard from '@/components/restaurant/MenuItemCard';
+import { FoodItemCardSkeletonGrid } from '@/components/restaurant/FoodItemCardSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import defaultCover from '@/assets/logo.jpg';
 
 export default function RestaurantDetailPage() {
@@ -105,8 +107,30 @@ export default function RestaurantDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen bg-background">
+        {/* Cover Skeleton */}
+        <Skeleton className="w-full h-64 md:h-96" />
+        
+        <div className="container mx-auto px-4 py-8">
+          {/* Restaurant Info Skeleton */}
+          <div className="mb-8">
+            <Skeleton className="h-10 w-1/2 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-2/3 mb-4" />
+            
+            <div className="flex flex-wrap gap-6 mb-4">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+          </div>
+
+          {/* Menu Skeleton */}
+          <div>
+            <Skeleton className="h-8 w-32 mb-6" />
+            <FoodItemCardSkeletonGrid count={4} />
+          </div>
+        </div>
       </div>
     );
   }

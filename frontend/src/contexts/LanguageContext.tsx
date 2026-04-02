@@ -11,7 +11,9 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // Translation dictionary
 const translations: Record<string, Record<string, string>> = {
   'en': {
-    'welcome': 'Welcome',
+    'welcome': 'Welcome!',
+    'home': 'Home',
+    'explore': 'Explore',
     'sign_in': 'Sign In',
     'sign_up': 'Sign Up',
     'logout': 'Logout',
@@ -56,6 +58,7 @@ const translations: Record<string, Record<string, string>> = {
     'fastest_delivery': 'Fastest Delivery',
     'lowest_delivery_fee': 'Lowest Delivery Fee',
     'no_restaurants_found': 'No restaurants found',
+    'no_categories_found': 'No categories found',
     'restaurant_found': '{count} restaurant{plural} found',
     'search_results': 'Search Results',
     'filters': 'Filters',
@@ -134,15 +137,39 @@ const translations: Record<string, Record<string, string>> = {
     'your_message': 'Your Message',
     'all_rights_reserved': 'All rights reserved.',
     'designed_with_love': 'Designed with ❤️ in Afghanistan',
+    'services': 'Services',
+    'testimonials': 'Testimonials',
+    'about_us': 'About Us',
+    'contact': 'Contact',
+    'about': 'About',
+    'my_profile': 'My Profile',
+    'manage_delivery_locations': 'Manage delivery locations',
+    'manage_payment_options': 'Manage payment options',
+    'manage_alerts_updates': 'Manage alerts and updates',
+    'saved_addresses': 'Saved Addresses',
+    'add_address': 'Add Address',
+    'no_saved_addresses': 'No saved addresses',
+    'add_first_address': 'Add your first address',
+    'default': 'Default',
+    'set_default': 'Set Default',
+    'delete': 'Delete',
+    'confirm_delete_address': 'Are you sure you want to delete this address?',
+    'address_deleted': 'Address deleted successfully',
+    'error_deleting_address': 'Error deleting address',
+    'default_address_updated': 'Default address updated',
+    'error_updating_default_address': 'Error updating default address',
+    'sending': 'Sending...',
     // Add more translations as needed
   },
   'ps': {
-    'welcome': 'ښه راغلاست',
+    'welcome': 'ښه راغلاست!',
+    'home': 'کور پاڼه',
+    'explore': 'پلټنه',
     'sign_in': 'ننوزل',
     'sign_up': 'ثبت نام',
     'logout': 'وتل',
     'profile': 'پروفایل',
-    'orders': 'اوردرونه',
+    'orders': 'فرمايشونه',
     'favorites': 'اخواړې',
     'addresses': 'پته',
     'payment_methods': 'د تادیې طریقې',
@@ -182,6 +209,7 @@ const translations: Record<string, Record<string, string>> = {
     'fastest_delivery': 'چټک تحویل',
     'lowest_delivery_fee': 'لږ تر لږه تحویل مصاریف',
     'no_restaurants_found': 'هیڅ رستورانت ونه موندل شو',
+    'no_categories_found': 'هیڅ کټګورۍ ونه موندل شوه',
     'search_results': 'د لټون پایلې',
     'filters': 'فلټرونه',
     'sorted_by': 'مرتب شوی د',
@@ -276,10 +304,17 @@ const translations: Record<string, Record<string, string>> = {
     'default_address_updated': 'اصلي پته تازه شوه',
     'error_updating_default_address': 'د اصلي پته تازه کولو کې ستونزه',
     'sending': 'لیږل کیږي...',
+    'services': 'خدمتونه',
+    'testimonials': 'نظريات',
+    'about_us': 'زموږ په اړه',
+    'contact': 'اړيکه',
+    'about': 'په اړه',
     // Add more translations as needed
   },
   'fa': {
-    'welcome': 'خوش آمدید',
+    'welcome': 'خوش آمدید!',
+    'home': 'صفحه اصلی',
+    'explore': 'کاوش',
     'sign_in': 'ورود',
     'sign_up': 'ثبت نام',
     'logout': 'خروج',
@@ -290,7 +325,7 @@ const translations: Record<string, Record<string, string>> = {
     'payment_methods': 'روش های پرداخت',
     'notifications': 'اعلانات',
     'admin_panel': 'پنل مدیریت',
-    'restaurants': 'رستوران ها',
+    'restaurants': 'رستورانت ها',
     'foods': 'غذاها',
     'search': 'جستجو',
     'view_restaurant': 'مشاهده رستوران',
@@ -324,6 +359,7 @@ const translations: Record<string, Record<string, string>> = {
     'fastest_delivery': 'سریع ترین تحویل',
     'lowest_delivery_fee': 'کمترین هزینه تحویل',
     'no_restaurants_found': 'هیچ رستورانی یافت نشد',
+    'no_categories_found': 'هیچ دسته بندی یافت نشد',
     'search_results': 'نتایج جستجو',
     'filters': 'فیلترها',
     'sorted_by': 'مرتب شده بر اساس',
@@ -418,6 +454,11 @@ const translations: Record<string, Record<string, string>> = {
     'default_address_updated': 'آدرس پیش فرض به روز شد',
     'error_updating_default_address': 'خطا در به روزرسانی آدرس پیش فرض',
     'sending': 'در حال ارسال...',
+    'services': 'خدمات',
+    'testimonials': 'نظرات',
+    'about_us': 'درباره ما',
+    'contact': 'تماس',
+    'about': 'درباره',
     // Add more translations as needed
   }
 };
@@ -432,7 +473,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     
     // Set document direction based on language
     document.documentElement.lang = savedLanguage;
-    document.documentElement.dir = savedLanguage === 'fa' || savedLanguage === 'ps' ? 'rtl' : 'ltr';
+    // Force LTR for all languages
+    document.documentElement.dir = 'ltr';
   }, []);
 
   const t = (key: string, params?: Record<string, any>): string => {
@@ -466,11 +508,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     
     // Set document direction based on language
     document.documentElement.lang = newLanguage;
-    document.documentElement.dir = newLanguage === 'fa' || newLanguage === 'ps' ? 'rtl' : 'ltr';
+    // Force LTR for all languages
+    document.documentElement.dir = 'ltr';
     
     // Also update the body attributes
     if (typeof document !== 'undefined') {
-      document.body.setAttribute('dir', document.documentElement.dir);
+      document.body.setAttribute('dir', 'ltr');
       document.body.setAttribute('lang', document.documentElement.lang);
     }
   };

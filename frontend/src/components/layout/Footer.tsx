@@ -1,40 +1,129 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Facebook, 
   Twitter, 
   Instagram, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  CreditCard,
-  Bike,
-  Shield,
-  Gift
+  Youtube,
+  Linkedin,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  User,
+  MessageSquare,
+  Star,
+  HelpCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import logo from '@/assets/logo.jpg';
 
 export default function Footer() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+
+  // Contact form state
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+    type: 'general'
+  });
+  
+  // Feedback form state
+  const [feedbackData, setFeedbackData] = useState({
+    name: '',
+    email: '',
+    message: '',
+    rating: 0
+  });
+
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingContact(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSubmittingContact(false);
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      subject: '',
+      message: '',
+      type: 'general'
+    });
+    alert('Thank you for your message! We will get back to you soon.');
+  };
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingFeedback(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSubmittingFeedback(false);
+    setFeedbackData({
+      name: '',
+      email: '',
+      message: '',
+      rating: 0
+    });
+    alert('Thank you for your feedback! It helps us improve our service.');
+  };
+
+  const faqs = [
+    {
+      question: 'How do I track my order?',
+      answer: 'You can track your order in real-time through the Orders page or mobile app.'
+    },
+    {
+      question: 'What are the delivery charges?',
+      answer: 'Delivery fees vary by restaurant and distance. You can see the exact fee before checkout.'
+    },
+    {
+      question: 'Can I cancel my order?',
+      answer: 'Yes, you can cancel within 5 minutes of placing your order if the restaurant hasn\'t started preparing it.'
+    }
+  ];
+
+  const scrollToSection = (id: string) => {
+    if (window.location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const footerSections = [
     {
       title: t("quick_links"),
       links: [
-        { name: t("restaurants"), path: "/restaurants" },
-        { name: t("track_order"), path: "/orders" },
-        { name: t("favorites"), path: "/favorites" },
-        { name: t("special_offers"), path: "/offers" },
-        { name: t("new_arrivals"), path: "/new" },
+        { name: t("restaurants"), onClick: () => scrollToSection('restaurants-section') },
+        { name: t("track_order"), path: "/user/orders" },
+        { name: t("favorites"), path: "/user/favorites" },
+        { name: t("special_offers"), path: "/category/special-offers" },
+        { name: t("services"), onClick: () => scrollToSection('services-section') },
+        { name: t("about_us"), onClick: () => scrollToSection('about-section') },
       ]
     },
     {
       title: t("customer_service"),
       links: [
         { name: t("help_center"), path: "/help" },
-        { name: t("contact_us"), path: "/contact" },
+        { name: t("contact_us"), onClick: () => scrollToSection('contact-section') },
         { name: t("terms_of_service"), path: "/terms" },
         { name: t("privacy_policy"), path: "/privacy" },
         { name: t("refund_policy"), path: "/refund" },
@@ -51,62 +140,35 @@ export default function Footer() {
     }
   ];
 
-  const features = [
-    { icon: Bike, title: t("fast_delivery"), desc: t("delivery_guarantee") },
-    { icon: Shield, title: t("secure_payments"), desc: t("pci_compliant") },
-    { icon: Gift, title: t("daily_offers"), desc: t("exclusive_discounts") },
-    { icon: CreditCard, title: t("multiple_payment"), desc: t("all_major_cards") },
-  ];
-
   return (
-    <footer className="bg-gradient-to-br from-muted/50 to-background border-t mt-20">
+    <footer className="bg-white dark:bg-gray-950 border-t mt-20">
       <div className="container mx-auto px-4 py-16">
-        {/* Features Section */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          {features.map((feature, index) => {
-            const Icon = feature.icon;
-            return (
-              <motion.div 
-                key={index}
-                className="flex flex-col items-center text-center p-6 rounded-xl bg-background/50 backdrop-blur-sm border"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.desc}</p>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-1 space-y-6">
             <motion.div 
-              className="flex items-center space-x-2"
+              className="flex items-center gap-3"
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3 }}
             >
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <span className="text-white font-bold text-xl">F</span>
+              <motion.img 
+                src={logo} 
+                alt="FoodDash Logo" 
+                className="w-14 h-14 rounded-2xl object-cover shadow-xl"
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.6 }}
+              />
+              <div>
+                <span className="font-bold text-3xl bg-gradient-to-r from-orange-600 via-yellow-600 to-orange-600 bg-clip-text text-transparent block">
+                  FoodDash
+                </span>
+                <p className="text-xs text-muted-foreground -mt-1">Delicious food delivered fast</p>
               </div>
-              <span className="font-bold text-2xl bg-gradient-to-r from-primary to-primary-700 bg-clip-text text-transparent">
-                FoodDash
-              </span>
             </motion.div>
             <motion.p 
-              className="text-sm text-muted-foreground"
+              className="text-sm text-muted-foreground leading-relaxed"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -115,49 +177,33 @@ export default function Footer() {
               {t("footer_description")}
             </motion.p>
             
-            {/* Contact Info */}
-            <motion.div 
-              className="space-y-3"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>+93 70 123 4567</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <span>support@fooddash.af</span>
-              </div>
-              <div className="flex items-start space-x-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>{t("address_kabul")}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>{t("operating_hours")}</span>
-              </div>
-            </motion.div>
-            
             {/* Social Media */}
             <motion.div 
-              className="flex space-x-4"
+              className="flex gap-4 pt-4"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: 0.3 }}
             >
-              <a href="#" className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
+              {[
+                { Icon: Facebook, href: "https://facebook.com/fooddash", color: "hover:bg-blue-600" },
+                { Icon: Twitter, href: "https://twitter.com/fooddash", color: "hover:bg-sky-500" },
+                { Icon: Instagram, href: "https://instagram.com/fooddash", color: "hover:bg-pink-600" },
+                { Icon: Youtube, href: "https://youtube.com/fooddash", color: "hover:bg-red-600" },
+                { Icon: Linkedin, href: "https://linkedin.com/company/fooddash", color: "hover:bg-blue-700" }
+              ].map(({ Icon, href, color }, idx) => (
+                <motion.a
+                  key={idx}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`h-11 w-11 rounded-full bg-white/10 dark:bg-gray-800 flex items-center justify-center border border-white/20 dark:border-gray-700 shadow-lg transition-all duration-300 ${color}`}
+                  whileHover={{ scale: 1.2, rotate: 10, y: -5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Icon className="h-5 w-5 text-white" />
+                </motion.a>
+              ))}
             </motion.div>
           </div>
 
@@ -178,59 +224,276 @@ export default function Footer() {
               <ul className="space-y-3">
                 {section.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
-                    <Link 
-                      to={link.path} 
-                      className="text-muted-foreground hover:text-primary transition-colors flex items-center group"
-                    >
-                      <span className="group-hover:ml-1 transition-all duration-200">{link.name}</span>
-                    </Link>
+                    {link.onClick ? (
+                      <button 
+                        onClick={link.onClick} 
+                        className="text-muted-foreground hover:text-primary transition-colors flex items-center group text-left w-full"
+                      >
+                        <span className="group-hover:ml-1 transition-all duration-200">{link.name}</span>
+                      </button>
+                    ) : (
+                      <Link 
+                        to={link.path || '#'} 
+                        className="text-muted-foreground hover:text-primary transition-colors flex items-center group"
+                      >
+                        <span className="group-hover:ml-1 transition-all duration-200">{link.name}</span>
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
             </motion.div>
           ))}
+        </div>
 
-          {/* Feedback Form */}
-          <motion.div 
-            className="lg:col-span-1"
-            initial={{ opacity: 0, y: 20 }}
+        {/* Contact & Feedback Row */}
+        <div id="contact-section" className="mt-20 pt-16 border-t border-primary/10">
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="rounded-3xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-xl p-8 md:p-10 border border-border h-full">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-3 bg-blue-500 rounded-2xl shadow-lg">
+                    <Mail className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold">{t('contact')}</h2>
+                    <p className="text-muted-foreground">General support & business inquiries</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleContactSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Full Name *
+                      </label>
+                      <Input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="John Doe"
+                        required
+                        className="rounded-xl bg-background/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Email Address *
+                      </label>
+                      <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="john@example.com"
+                        required
+                        className="rounded-xl bg-background/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Phone Number
+                      </label>
+                      <Input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="+93 70 123 4567"
+                        className="rounded-xl bg-background/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Inquiry Type
+                      </label>
+                      <select
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        className="w-full px-4 py-2 rounded-xl border border-input bg-background/50 focus:ring-2 focus:ring-primary focus:outline-none h-10"
+                      >
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="business">Business Partnership</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Message *
+                    </label>
+                    <textarea
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      rows={4}
+                      className="w-full px-4 py-3 rounded-xl border border-input focus:border-primary focus:outline-none transition-colors bg-background/50 resize-none"
+                      placeholder="How can we help you?"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmittingContact}
+                    className="w-full py-6 h-12 btn-grad text-lg rounded-xl font-medium shadow-lg hover:shadow-xl transition-all"
+                  >
+                    {isSubmittingContact ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </form>
+              </div>
+            </motion.div>
+
+            {/* Feedback & Rating Form */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="rounded-3xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-xl p-8 md:p-10 border border-border h-full">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-3 bg-orange-500 rounded-2xl shadow-lg">
+                    <Star className="h-8 w-8 text-white fill-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold">Feedback</h2>
+                    <p className="text-muted-foreground">Share your experience with us</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Name *
+                      </label>
+                      <Input
+                        type="text"
+                        value={feedbackData.name}
+                        onChange={(e) => setFeedbackData({ ...feedbackData, name: e.target.value })}
+                        placeholder="Your Name"
+                        required
+                        className="rounded-xl bg-background/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Email *
+                      </label>
+                      <Input
+                        type="email"
+                        value={feedbackData.email}
+                        onChange={(e) => setFeedbackData({ ...feedbackData, email: e.target.value })}
+                        placeholder="your@email.com"
+                        required
+                        className="rounded-xl bg-background/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium mb-2">Rating *</label>
+                    <div className="flex gap-3">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setFeedbackData({ ...feedbackData, rating: star })}
+                          className="transition-transform hover:scale-125 focus:outline-none"
+                        >
+                          <Star 
+                            className={`h-10 w-10 ${
+                              feedbackData.rating >= star 
+                                ? 'text-yellow-400 fill-yellow-400' 
+                                : 'text-gray-300'
+                            }`} 
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Feedback *
+                    </label>
+                    <textarea
+                      value={feedbackData.message}
+                      onChange={(e) => setFeedbackData({ ...feedbackData, message: e.target.value })}
+                      rows={4}
+                      className="w-full px-4 py-3 rounded-xl border border-input focus:border-primary focus:outline-none transition-colors bg-background/50 resize-none"
+                      placeholder="What did you like or dislike?"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmittingFeedback}
+                    className="w-full py-6 h-12 btn-grad text-lg rounded-xl font-medium shadow-lg hover:shadow-xl transition-all"
+                  >
+                    {isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+                  </Button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* FAQ Section Row */}
+        <div className="mt-12">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: 0.4 }}
+            transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <span className="text-white font-bold text-xl">F</span>
+            <div className="rounded-3xl bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm shadow-lg p-8 md:p-10 border border-border">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="max-w-md">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full">
+                      <HelpCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <h2 className="text-3xl font-bold">Common Questions</h2>
+                  </div>
+                  <p className="text-muted-foreground mb-6">Quick answers to frequently asked questions about our service.</p>
+                  
+                  {/* Footer Contact Icons */}
+                  <div className="space-y-4 pt-4 border-t border-primary/10">
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-primary" />
+                      <span className="font-medium">+93 70 123 4567</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-primary" />
+                      <span className="font-medium">support@fooddash.af</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Kabul, Afghanistan</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 grid md:grid-cols-1 gap-4">
+                  {faqs.map((faq, index) => (
+                    <div key={index} className="p-6 rounded-2xl bg-background/40 hover:bg-background/60 transition-colors border border-border/50 shadow-sm">
+                      <h3 className="font-bold text-lg mb-2">{faq.question}</h3>
+                      <p className="text-muted-foreground">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h3 className="font-semibold text-xl">FoodDash</h3>
             </div>
-            <h3 className="font-semibold mb-6 text-lg relative">
-              {t("send_feedback")}
-              <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-primary rounded-full"></span>
-            </h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t("feedback_description")}
-            </p>
-            <form className="space-y-3">
-              <input
-                type="text"
-                placeholder={t("your_name")}
-                className="w-full px-4 py-3 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
-              <input
-                type="email"
-                placeholder={t("your_email")}
-                className="w-full px-4 py-3 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
-              <textarea
-                placeholder={t("your_message")}
-                rows={4}
-                className="w-full px-4 py-3 text-sm rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              ></textarea>
-              <button className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
-                {t("send_feedback")}
-              </button>
-            </form>
           </motion.div>
         </div>
 

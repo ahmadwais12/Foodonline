@@ -6,39 +6,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
-// Mock data for active delivery
-const activeDelivery = {
-  id: '#ORD-3210',
-  customer: 'John Doe',
-  phone: '+1 (555) 123-4567',
-  restaurant: 'Italian Bistro',
-  restaurantAddress: '123 Main St, New York, NY',
-  deliveryAddress: '456 Park Ave, Apt 5B, New York, NY',
-  distance: '2.3 km',
-  estimatedTime: '25 mins',
-  amount: '$24.50',
-  tip: '$3.00',
-  total: '$27.50',
-  timePlaced: '15 mins ago',
-  items: [
-    { name: 'Margherita Pizza', quantity: 1 },
-    { name: 'Caesar Salad', quantity: 1 },
-    { name: 'Garlic Bread', quantity: 2 },
-  ],
-  deliverySteps: [
-    { id: 1, name: 'Order Received', completed: true, time: '2:30 PM' },
-    { id: 2, name: 'Preparing', completed: true, time: '2:35 PM' },
-    { id: 3, name: 'Ready for Pickup', completed: true, time: '2:50 PM' },
-    { id: 4, name: 'On the Way', completed: true, time: '2:55 PM' },
-    { id: 5, name: 'Near Destination', completed: false, time: '' },
-    { id: 6, name: 'Delivered', completed: false, time: '' },
-  ],
-  currentStep: 4,
-};
-
 export default function ActiveDeliveryPage() {
+  const [activeDelivery, setActiveDelivery] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState(15); // minutes
   const [distanceRemaining, setDistanceRemaining] = useState('1.2 km');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadActiveDelivery();
+  }, []);
+
+  const loadActiveDelivery = async () => {
+    try {
+      setLoading(true);
+      // TODO: Replace with actual API call when backend endpoint is ready
+      // const data = await driverService.getActiveDelivery();
+      // setActiveDelivery(data);
+      setActiveDelivery(null);
+    } catch (error) {
+      console.error('Failed to load active delivery:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Simulate countdown timer
   useEffect(() => {

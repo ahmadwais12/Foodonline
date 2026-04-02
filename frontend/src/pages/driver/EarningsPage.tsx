@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Filter, Download, TrendingUp, Euro, Package, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,35 +12,46 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Mock data
-const earningsData = {
-  totalEarnings: 2847.50,
-  totalTips: 452.30,
-  totalDeliveries: 142,
-  avgDeliveryTime: '22 min',
-  avgTip: 3.20,
-};
-
-const weeklyEarnings = [
-  { day: 'Mon', date: 'Jun 12', earnings: 120.50, tips: 18.20, deliveries: 8 },
-  { day: 'Tue', date: 'Jun 13', earnings: 156.75, tips: 24.50, deliveries: 10 },
-  { day: 'Wed', date: 'Jun 14', earnings: 189.25, tips: 28.75, deliveries: 12 },
-  { day: 'Thu', date: 'Jun 15', earnings: 167.80, tips: 25.30, deliveries: 11 },
-  { day: 'Fri', date: 'Jun 16', earnings: 201.40, tips: 32.10, deliveries: 13 },
-  { day: 'Sat', date: 'Jun 17', earnings: 245.60, tips: 38.40, deliveries: 15 },
-  { day: 'Sun', date: 'Jun 18', earnings: 189.30, tips: 29.60, deliveries: 12 },
-];
-
-const recentTransactions = [
-  { id: '#TXN-1001', date: '2023-06-18', amount: '$245.60', type: 'Weekly Earnings', status: 'completed' },
-  { id: '#TXN-1000', date: '2023-06-17', amount: '$189.30', type: 'Daily Earnings', status: 'completed' },
-  { id: '#TXN-0999', date: '2023-06-16', amount: '$201.40', type: 'Daily Earnings', status: 'completed' },
-  { id: '#TXN-0998', date: '2023-06-15', amount: '$167.80', type: 'Daily Earnings', status: 'completed' },
-  { id: '#TXN-0997', date: '2023-06-14', amount: '$189.25', type: 'Daily Earnings', status: 'completed' },
-];
-
 export default function EarningsPage() {
   const [dateFilter, setDateFilter] = useState('this_week');
+  const [earningsData, setEarningsData] = useState({
+    totalEarnings: 0,
+    totalTips: 0,
+    totalDeliveries: 0,
+    avgDeliveryTime: '-',
+    avgTip: 0,
+  });
+  const [weeklyEarnings, setWeeklyEarnings] = useState<any[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadEarnings();
+  }, []);
+
+  const loadEarnings = async () => {
+    try {
+      setLoading(true);
+      // TODO: Replace with actual API call when backend endpoint is ready
+      // const data = await driverService.getEarnings();
+      // setEarningsData(data.summary);
+      // setWeeklyEarnings(data.weekly);
+      // setRecentTransactions(data.transactions);
+      setEarningsData({
+        totalEarnings: 0,
+        totalTips: 0,
+        totalDeliveries: 0,
+        avgDeliveryTime: '-',
+        avgTip: 0,
+      });
+      setWeeklyEarnings([]);
+      setRecentTransactions([]);
+    } catch (error) {
+      console.error('Failed to load earnings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-6">

@@ -6,8 +6,8 @@ import { userService } from '@/services/user.service';
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (user: AuthUser) => void;
-  logout: () => void;
+  login: (user: AuthUser) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,14 +66,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (authUser: AuthUser) => {
-    // Fetch full user profile after login
+    // Set user immediately from login data
+    setUser(authUser);
+    sessionStorage.setItem('user', JSON.stringify(authUser));
+
+    // Then try to fetch full profile in the background
     try {
       const userProfile = await userService.getProfile();
       setUser(userProfile);
+      sessionStorage.setItem('user', JSON.stringify(userProfile));
     } catch (error) {
       console.error('Failed to fetch user profile after login:', error);
-      // Fall back to the authUser data
-      setUser(authUser);
     }
   };
 

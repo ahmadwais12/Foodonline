@@ -6,7 +6,7 @@ import { restaurantService } from '@/services/restaurant.service';
 import { MenuItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import FoodItemCard from '@/components/restaurant/FoodItemCard';
-import LoadingSpinner from '@/components/ui/loading-spinner';
+import { FoodItemCardSkeletonGrid } from '@/components/restaurant/FoodItemCardSkeleton';
 
 export default function FastFoodPage() {
   const navigate = useNavigate();
@@ -77,9 +77,7 @@ export default function FastFoodPage() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="lg" />
-          </div>
+          <FoodItemCardSkeletonGrid count={8} />
         ) : fastFoods.length === 0 ? (
           <div className="text-center py-12">
             <Timer className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

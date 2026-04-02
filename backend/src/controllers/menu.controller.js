@@ -215,17 +215,37 @@ exports.searchMenuItems = async (req, res) => {
 // Get popular menu items
 exports.getPopularItems = async (req, res) => {
   try {
-    const [menuItems] = await db.execute(
-      `SELECT * FROM menu_items 
-       WHERE is_available = TRUE 
-       ORDER BY RAND() 
+    // We can either use food_images table or menu_items table.
+    // food_images table has is_favorite flag which the user asked for.
+    const [foodImages] = await db.execute(
+      `SELECT id, name, image_url, category, price, description 
+       FROM food_images 
+       WHERE is_favorite = TRUE 
+       AND is_available = TRUE 
+       ORDER BY display_order 
        LIMIT 12`
     );
+
+    // If no food images, fallback to random menu items
+    if (foodImages.length === 0) {
+      const [menuItems] = await db.execute(
+        `SELECT * FROM menu_items 
+         WHERE is_available = TRUE 
+         ORDER BY RAND() 
+         LIMIT 12`
+      );
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          menuItems
+        }
+      });
+    }
 
     res.status(200).json({
       status: 'success',
       data: {
-        menuItems
+        menuItems: foodImages
       }
     });
   } catch (error) {
@@ -240,18 +260,35 @@ exports.getPopularItems = async (req, res) => {
 // Get special offers
 exports.getSpecialOffers = async (req, res) => {
   try {
-    const [menuItems] = await db.execute(
-      `SELECT * FROM menu_items 
-       WHERE is_available = TRUE 
-       AND price > 15
-       ORDER BY price DESC 
+    const [foodImages] = await db.execute(
+      `SELECT id, name, image_url, category, price, description, discount_percentage 
+       FROM food_images 
+       WHERE is_special = TRUE 
+       AND is_available = TRUE 
+       ORDER BY display_order 
        LIMIT 12`
     );
+
+    if (foodImages.length === 0) {
+      const [menuItems] = await db.execute(
+        `SELECT * FROM menu_items 
+         WHERE is_available = TRUE 
+         AND price > 15
+         ORDER BY price DESC 
+         LIMIT 12`
+      );
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          menuItems
+        }
+      });
+    }
 
     res.status(200).json({
       status: 'success',
       data: {
-        menuItems
+        menuItems: foodImages
       }
     });
   } catch (error) {
@@ -266,18 +303,35 @@ exports.getSpecialOffers = async (req, res) => {
 // Get fast food items
 exports.getFastFoodItems = async (req, res) => {
   try {
-    const [menuItems] = await db.execute(
-      `SELECT * FROM menu_items 
-       WHERE is_available = TRUE 
-       AND (category LIKE '%Fast Food%' OR category LIKE '%Burger%' OR category LIKE '%Pizza%' OR category LIKE '%Sandwich%')
-       ORDER BY name 
+    const [foodImages] = await db.execute(
+      `SELECT id, name, image_url, category, price, description 
+       FROM food_images 
+       WHERE is_fast_food = TRUE 
+       AND is_available = TRUE 
+       ORDER BY display_order 
        LIMIT 12`
     );
+
+    if (foodImages.length === 0) {
+      const [menuItems] = await db.execute(
+        `SELECT * FROM menu_items 
+         WHERE is_available = TRUE 
+         AND (category LIKE '%Fast Food%' OR category LIKE '%Burger%' OR category LIKE '%Pizza%' OR category LIKE '%Sandwich%')
+         ORDER BY name 
+         LIMIT 12`
+      );
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          menuItems
+        }
+      });
+    }
 
     res.status(200).json({
       status: 'success',
       data: {
-        menuItems
+        menuItems: foodImages
       }
     });
   } catch (error) {
@@ -292,18 +346,35 @@ exports.getFastFoodItems = async (req, res) => {
 // Get discounted items
 exports.getDiscountedItems = async (req, res) => {
   try {
-    const [menuItems] = await db.execute(
-      `SELECT * FROM menu_items 
-       WHERE is_available = TRUE 
-       AND price < 10
-       ORDER BY price ASC 
+    const [foodImages] = await db.execute(
+      `SELECT id, name, image_url, category, price, description, discount_percentage 
+       FROM food_images 
+       WHERE is_discounted = TRUE 
+       AND is_available = TRUE 
+       ORDER BY display_order 
        LIMIT 12`
     );
+
+    if (foodImages.length === 0) {
+      const [menuItems] = await db.execute(
+        `SELECT * FROM menu_items 
+         WHERE is_available = TRUE 
+         AND price < 10
+         ORDER BY price ASC 
+         LIMIT 12`
+      );
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          menuItems
+        }
+      });
+    }
 
     res.status(200).json({
       status: 'success',
       data: {
-        menuItems
+        menuItems: foodImages
       }
     });
   } catch (error) {

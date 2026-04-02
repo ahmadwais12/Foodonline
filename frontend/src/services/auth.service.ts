@@ -43,6 +43,7 @@ interface AuthResponseData {
 class AuthService {
   async login({ email, password }: LoginData): Promise<AuthUser> {
     try {
+      console.log('[AuthService] Attempting login for:', email);
       const response = await apiClient.post<ApiResponse<AuthResponseData>>('/auth/login', { email, password });
       
       if (response.data.status === 'success' && response.data.data) {
@@ -51,29 +52,29 @@ class AuthService {
         localStorage.setItem('refreshToken', response.data.data.refreshToken);
         
         // Store user info in session storage for faster access
-        sessionStorage.setItem('user', JSON.stringify({
-          id: response.data.data.user.id.toString(),
-          email: response.data.data.user.email,
-          username: response.data.data.user.username,
-          role: response.data.data.user.role || 'customer',
-        }));
-        
-        return {
+        const userData = {
           id: response.data.data.user.id.toString(),
           email: response.data.data.user.email,
           username: response.data.data.user.username,
           role: response.data.data.user.role || 'customer',
         };
+        sessionStorage.setItem('user', JSON.stringify(userData));
+        
+        console.log('[AuthService] Login successful:', userData.username);
+        return userData;
       } else {
         throw new Error(response.data.message || 'Login failed');
       }
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || error.message || 'Login failed');
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      console.error('[AuthService] Login error:', errorMessage);
+      throw new Error(errorMessage);
     }
   }
 
   async register({ email, password, username }: RegisterData): Promise<AuthUser> {
     try {
+      console.log('[AuthService] Attempting registration for:', username);
       const response = await apiClient.post<ApiResponse<AuthResponseData>>('/auth/register', { email, password, username });
       
       if (response.data.status === 'success' && response.data.data) {
@@ -81,17 +82,22 @@ class AuthService {
         localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('refreshToken', response.data.data.refreshToken);
         
-        return {
+        const userData = {
           id: response.data.data.user.id.toString(),
           email: response.data.data.user.email,
           username: response.data.data.user.username,
-          role: 'customer', // Default role for new registrations
+          role: 'customer',
         };
+        
+        console.log('[AuthService] Registration successful:', userData.username);
+        return userData;
       } else {
         throw new Error(response.data.message || 'Registration failed');
       }
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || error.message || 'Registration failed');
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      console.error('[AuthService] Registration error:', errorMessage);
+      throw new Error(errorMessage);
     }
   }
 
@@ -100,15 +106,17 @@ class AuthService {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         await apiClient.post('/auth/logout', { refreshToken });
+        console.log('[AuthService] Logout successful');
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('[AuthService] Logout error:', error);
     } finally {
       // Clear tokens from localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       // Clear user data from session storage
       sessionStorage.removeItem('user');
+      console.log('[AuthService] Cleared auth data');
     }
   }
 

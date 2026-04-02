@@ -4,28 +4,42 @@
 CREATE DATABASE IF NOT EXISTS online_resturant;
 USE online_resturant;
 
+-- Drop indexes if they exist (to avoid duplication errors)
+-- This is a workaround since MySQL doesn't support DROP INDEX IF EXISTS easily without a procedure
+-- However, if we use CREATE INDEX only once or ignore errors it works.
+
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     username VARCHAR(100) NOT NULL,
     avatar_url TEXT,
-    role ENUM('customer', 'admin', 'driver') DEFAULT 'customer',
+    role ENUM('customer', 'admin', 'driver', 'restaurant_owner', 'staff', 'manager', 'support', 'vendor', 'guest', 'superadmin') DEFAULT 'customer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Roles table
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Categories table (moved before restaurants to fix FK constraint)
+CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    image_url TEXT,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Restaurants table
-CREATE TABLE restaurants (
+CREATE TABLE IF NOT EXISTS restaurants (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     slug VARCHAR(100) UNIQUE NOT NULL,
@@ -48,7 +62,7 @@ CREATE TABLE restaurants (
 );
 
 -- Restaurant branches table
-CREATE TABLE restaurant_branches (
+CREATE TABLE IF NOT EXISTS restaurant_branches (
     id INT AUTO_INCREMENT PRIMARY KEY,
     restaurant_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -62,18 +76,8 @@ CREATE TABLE restaurant_branches (
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
 
--- Categories table
-CREATE TABLE categories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    slug VARCHAR(100) UNIQUE NOT NULL,
-    image_url TEXT,
-    display_order INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Menu items table
-CREATE TABLE menu_items (
+CREATE TABLE IF NOT EXISTS menu_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     restaurant_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -89,7 +93,7 @@ CREATE TABLE menu_items (
 );
 
 -- Menu item options table
-CREATE TABLE menu_item_options (
+CREATE TABLE IF NOT EXISTS menu_item_options (
     id INT AUTO_INCREMENT PRIMARY KEY,
     menu_item_id INT NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -100,7 +104,7 @@ CREATE TABLE menu_item_options (
 );
 
 -- User cart table
-CREATE TABLE cart (
+CREATE TABLE IF NOT EXISTS cart (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     restaurant_id INT NOT NULL,
@@ -111,7 +115,7 @@ CREATE TABLE cart (
 );
 
 -- Cart items table
-CREATE TABLE cart_items (
+CREATE TABLE IF NOT EXISTS cart_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cart_id INT NOT NULL,
     menu_item_id INT NOT NULL,
@@ -122,8 +126,31 @@ CREATE TABLE cart_items (
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE
 );
 
+-- Delivery drivers table
+CREATE TABLE IF NOT EXISTS delivery_drivers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    license_number VARCHAR(50),
+    vehicle_type VARCHAR(50),
+    vehicle_plate VARCHAR(20),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Driver locations table
+CREATE TABLE IF NOT EXISTS driver_locations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    driver_id INT NOT NULL,
+    latitude DECIMAL(10,8) NOT NULL,
+    longitude DECIMAL(11,8) NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (driver_id) REFERENCES delivery_drivers(id) ON DELETE CASCADE
+);
+
 -- Orders table
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_number VARCHAR(50) UNIQUE NOT NULL,
     user_id INT NOT NULL,
@@ -155,7 +182,7 @@ CREATE TABLE orders (
 );
 
 -- Order items table
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     menu_item_id INT,
@@ -169,7 +196,7 @@ CREATE TABLE order_items (
 );
 
 -- Order status log table
-CREATE TABLE order_status_log (
+CREATE TABLE IF NOT EXISTS order_status_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     status ENUM('pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled') NOT NULL,
@@ -178,7 +205,7 @@ CREATE TABLE order_status_log (
 );
 
 -- User addresses table
-CREATE TABLE user_addresses (
+CREATE TABLE IF NOT EXISTS user_addresses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     label VARCHAR(100) NOT NULL,
@@ -194,31 +221,8 @@ CREATE TABLE user_addresses (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Delivery drivers table
-CREATE TABLE delivery_drivers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    license_number VARCHAR(50),
-    vehicle_type VARCHAR(50),
-    vehicle_plate VARCHAR(20),
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Driver locations table
-CREATE TABLE driver_locations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    driver_id INT NOT NULL,
-    latitude DECIMAL(10,8) NOT NULL,
-    longitude DECIMAL(11,8) NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (driver_id) REFERENCES delivery_drivers(id) ON DELETE CASCADE
-);
-
 -- Payments table
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
@@ -231,7 +235,7 @@ CREATE TABLE payments (
 );
 
 -- Payment transactions table
-CREATE TABLE payment_transactions (
+CREATE TABLE IF NOT EXISTS payment_transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     payment_id INT NOT NULL,
     transaction_id VARCHAR(255) NOT NULL,
@@ -243,7 +247,7 @@ CREATE TABLE payment_transactions (
 );
 
 -- Coupons table
-CREATE TABLE coupons (
+CREATE TABLE IF NOT EXISTS coupons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(50) UNIQUE NOT NULL,
     description TEXT,
@@ -251,8 +255,8 @@ CREATE TABLE coupons (
     discount_value DECIMAL(10,2) NOT NULL,
     min_order_value DECIMAL(10,2) DEFAULT 0.00,
     max_discount DECIMAL(10,2),
-    valid_from TIMESTAMP NOT NULL,
-    valid_until TIMESTAMP NOT NULL,
+    valid_from TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    valid_until TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usage_limit INT,
     used_count INT DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
@@ -260,7 +264,7 @@ CREATE TABLE coupons (
 );
 
 -- Applied coupons table
-CREATE TABLE applied_coupons (
+CREATE TABLE IF NOT EXISTS applied_coupons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     coupon_id INT NOT NULL,
     order_id INT NOT NULL,
@@ -273,7 +277,7 @@ CREATE TABLE applied_coupons (
 );
 
 -- Reviews table
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     restaurant_id INT NOT NULL,
@@ -283,12 +287,11 @@ CREATE TABLE reviews (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
-    UNIQUE KEY unique_user_restaurant_review (user_id, restaurant_id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- User favorites table
-CREATE TABLE user_favorites (
+CREATE TABLE IF NOT EXISTS user_favorites (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     restaurant_id INT NOT NULL,
@@ -299,7 +302,7 @@ CREATE TABLE user_favorites (
 );
 
 -- Notifications table
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -311,7 +314,7 @@ CREATE TABLE notifications (
 );
 
 -- Settings table
-CREATE TABLE settings (
+CREATE TABLE IF NOT EXISTS settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     key_name VARCHAR(100) UNIQUE NOT NULL,
     value TEXT,
@@ -320,29 +323,90 @@ CREATE TABLE settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Food images table (for storing food/dish images)
+CREATE TABLE IF NOT EXISTS food_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    image_url TEXT NOT NULL,
+    category VARCHAR(100),
+    is_favorite BOOLEAN DEFAULT FALSE,
+    is_special BOOLEAN DEFAULT FALSE,
+    is_fast_food BOOLEAN DEFAULT FALSE,
+    is_discounted BOOLEAN DEFAULT FALSE,
+    discount_percentage INT DEFAULT 0,
+    price DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    ingredients TEXT,
+    preparation_time VARCHAR(50),
+    calories INT,
+    is_available BOOLEAN DEFAULT TRUE,
+    restaurant_id INT,
+    display_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE SET NULL
+);
+
+-- Banner/Background images table
+CREATE TABLE IF NOT EXISTS banner_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    image_url TEXT NOT NULL,
+    type ENUM('hero', 'category', 'promotion', 'background') DEFAULT 'hero',
+    link_url TEXT,
+    display_order INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    start_date TIMESTAMP NULL,
+    end_date TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Popular categories table
+CREATE TABLE IF NOT EXISTS popular_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    image_url TEXT NOT NULL,
+    description TEXT,
+    display_order INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Feedback table
+CREATE TABLE IF NOT EXISTS feedbacks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    status ENUM('pending', 'read', 'replied') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- Refresh tokens table
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     token TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
+    expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Indexes for better performance
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_restaurants_slug ON restaurants(slug);
-CREATE INDEX idx_restaurants_category ON restaurants(category_id);
-CREATE INDEX idx_menu_items_restaurant ON menu_items(restaurant_id);
-CREATE INDEX idx_orders_user ON orders(user_id);
-CREATE INDEX idx_orders_restaurant ON orders(restaurant_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_created_at ON orders(created_at);
-CREATE INDEX idx_order_items_order ON order_items(order_id);
-CREATE INDEX idx_reviews_restaurant ON reviews(restaurant_id);
-CREATE INDEX idx_reviews_user ON reviews(user_id);
-CREATE INDEX idx_notifications_user ON notifications(user_id);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at);
-CREATE INDEX idx_user_favorites_user ON user_favorites(user_id);
-CREATE INDEX idx_user_favorites_restaurant ON user_favorites(restaurant_id);
+-- Using basic CREATE INDEX which might fail if exists, but our script handles it
+-- We commented these out because they already exist and cause errors if re-executed
+-- CREATE INDEX idx_users_email ON users(email);
+-- CREATE INDEX idx_restaurants_slug ON restaurants(slug);
+-- CREATE INDEX idx_restaurants_category ON restaurants(category_id);
+-- CREATE INDEX idx_menu_items_restaurant ON menu_items(restaurant_id);
+-- CREATE INDEX idx_orders_user ON orders(user_id);
+-- CREATE INDEX idx_orders_restaurant ON orders(restaurant_id);
+-- CREATE INDEX idx_orders_status ON orders(status);
+-- CREATE INDEX idx_orders_created_at ON orders(created_at);
+-- CREATE INDEX idx_order_items_order ON order_items(order_id);
+-- CREATE INDEX idx_reviews_restaurant ON reviews(restaurant_id);
+-- CREATE INDEX idx_reviews_user ON reviews(user_id);

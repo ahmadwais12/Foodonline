@@ -43,10 +43,10 @@ class RestaurantService {
       if (filters?.query) params.append('query', filters.query);
       if (filters?.sortBy) params.append('sortBy', filters.sortBy);
       
-      const response = await apiClient.get<ApiResponse<Restaurant[]>>(`/restaurants?${params.toString()}`);
+      const response = await apiClient.get<ApiResponse<{ restaurants: Restaurant[] }>>(`/restaurants?${params.toString()}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.restaurants;
       } else {
         throw new Error(response.data.message || 'Failed to fetch restaurants');
       }
@@ -57,10 +57,10 @@ class RestaurantService {
 
   async getRestaurantBySlug(slug: string): Promise<Restaurant | null> {
     try {
-      const response = await apiClient.get<ApiResponse<Restaurant>>(`/restaurants/slug/${slug}`);
+      const response = await apiClient.get<ApiResponse<{ restaurant: Restaurant }>>(`/restaurants/slug/${slug}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.restaurant;
       } else if (response.data.status === 'error' && response.data.message === 'Restaurant not found') {
         return null;
       } else {
@@ -76,10 +76,10 @@ class RestaurantService {
 
   async getRestaurantMenu(restaurantId: string): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>(`/menu/restaurant/${restaurantId}`);
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>(`/menu/restaurant/${restaurantId}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch restaurant menu');
       }
@@ -102,10 +102,10 @@ class RestaurantService {
       if (filters?.isVegetarian !== undefined) params.append('isVegetarian', filters.isVegetarian.toString());
       if (filters?.sortBy) params.append('sortBy', filters.sortBy);
       
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>(`/menu?${params.toString()}`);
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>(`/menu?${params.toString()}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch menu items');
       }
@@ -116,10 +116,10 @@ class RestaurantService {
 
   async getCategories(): Promise<Category[]> {
     try {
-      const response = await apiClient.get<ApiResponse<Category[]>>('/restaurants/categories');
+      const response = await apiClient.get<ApiResponse<{ categories: Category[] }>>('/restaurants/categories');
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.categories;
       } else {
         throw new Error(response.data.message || 'Failed to fetch categories');
       }
@@ -128,12 +128,26 @@ class RestaurantService {
     }
   }
 
-  async getCategoryById(id: string): Promise<Category> {
+  async getMenuItemById(id: string): Promise<MenuItem> {
     try {
-      const response = await apiClient.get<ApiResponse<Category>>(`/restaurants/categories/${id}`);
+      const response = await apiClient.get<ApiResponse<{ menuItem: MenuItem }>>(`/menu/${id}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItem;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch menu item');
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Failed to fetch menu item');
+    }
+  }
+
+  async getCategoryById(id: string): Promise<Category> {
+    try {
+      const response = await apiClient.get<ApiResponse<{ category: Category }>>(`/restaurants/categories/${id}`);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        return response.data.data.category;
       } else {
         throw new Error(response.data.message || 'Failed to fetch category');
       }
@@ -148,10 +162,10 @@ class RestaurantService {
 
   async searchMenuItems(query: string): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>(`/menu/search?q=${encodeURIComponent(query)}`);
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>(`/menu/search?q=${encodeURIComponent(query)}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to search menu items');
       }
@@ -208,10 +222,10 @@ class RestaurantService {
 
   async getPopularItems(): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>('/menu/popular');
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>('/menu/popular');
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch popular items');
       }
@@ -222,10 +236,10 @@ class RestaurantService {
 
   async getSpecialOffers(): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>('/menu/special-offers');
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>('/menu/special-offers');
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch special offers');
       }
@@ -236,10 +250,10 @@ class RestaurantService {
 
   async getFastFoodItems(): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>('/menu/fast-food');
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>('/menu/fast-food');
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch fast food items');
       }
@@ -250,10 +264,10 @@ class RestaurantService {
 
   async getDiscountedItems(): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>('/menu/discounted');
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>('/menu/discounted');
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch discounted items');
       }
@@ -264,10 +278,10 @@ class RestaurantService {
 
   async getMenuItemsByCategory(category: string): Promise<MenuItem[]> {
     try {
-      const response = await apiClient.get<ApiResponse<MenuItem[]>>(`/menu/category/${category}`);
+      const response = await apiClient.get<ApiResponse<{ menuItems: MenuItem[] }>>(`/menu/category/${category}`);
       
       if (response.data.status === 'success' && response.data.data) {
-        return response.data.data;
+        return response.data.data.menuItems;
       } else {
         throw new Error(response.data.message || 'Failed to fetch menu items by category');
       }

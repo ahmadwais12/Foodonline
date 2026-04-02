@@ -5,7 +5,7 @@ const mysql = require('mysql2/promise');
 const dbConfig = {
   host: 'localhost',
   user: 'root',
-  password: 'ahmad@wais12',
+  password: '',
   database: 'online_resturant'
 };
 

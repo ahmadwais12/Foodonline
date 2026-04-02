@@ -6,6 +6,9 @@ import { UserProvider } from './contexts/UserContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { Toaster } from './components/ui/toaster';
+import ErrorBoundary from './components/ErrorBoundary';
+
+import { useAuth } from './contexts/AuthContext';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -13,32 +16,38 @@ import RestaurantsPage from './pages/RestaurantsPage';
 import RestaurantDetailPage from './pages/RestaurantDetailPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
-import OrdersPage from './pages/OrdersPage';
-import OrderDetailPage from './pages/OrderDetailPage';
-import ProfilePage from './pages/ProfilePage';
-import FavoritesPage from './pages/FavoritesPage';
+import UserOrdersPage from './pages/UserOrdersPage';
+import UserOrderDetailPage from './pages/UserOrderDetailPage';
+import UserProfilePage from './pages/UserProfilePage';
+import UserDashboard from './pages/UserDashboard';
+import UserFavoritesPage from './pages/UserFavoritesPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import NotificationsPage from './pages/NotificationsPage';
-import SavedAddressesPage from './pages/SavedAddressesPage';
-import PaymentMethodsPage from './pages/PaymentMethodsPage';
+import UserNotificationsPage from './pages/UserNotificationsPage';
+import UserSavedAddressesPage from './pages/UserSavedAddressesPage';
+import UserPaymentMethodsPage from './pages/UserPaymentMethodsPage';
 import SearchPage from './pages/SearchPage';
 import FoodDetailPage from './pages/FoodDetailPage';
 import CategoryDetailPage from './pages/CategoryDetailPage';
+import CategoryFoodsPage from './pages/CategoryFoodsPage';
 import FastFoodPage from './pages/FastFoodPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
-import DashboardPage from './pages/admin/DashboardPage';
-import AdminRestaurantsPage from './pages/admin/RestaurantsPage';
-import AdminOrdersPage from './pages/admin/OrdersPage';
-import AdminUsersPage from './pages/admin/UsersPage';
-import AdminMenuPage from './pages/admin/MenuPage';
-import AdminPaymentsPage from './pages/admin/PaymentsPage';
-import AdminCouponsPage from './pages/admin/CouponsPage';
-import AdminReportsPage from './pages/admin/ReportsPage';
-import AdminSettingsPage from './pages/admin/SettingsPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminRestaurantsPage from './pages/admin/AdminRestaurantsPage';
+import AdminOrdersPage from './pages/admin/AdminOrdersPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminMenuPage from './pages/admin/AdminMenuPage';
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
+import AdminCouponsPage from './pages/admin/AdminCouponsPage';
+import AdminReportsPage from './pages/admin/AdminReportsPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
+import AdminDriversPage from './pages/admin/AdminDriversPage';
+import AdminProfilePage from './pages/admin/AdminProfilePage';
 
 // Driver Pages
 import DriverLayout from './pages/driver/DriverLayout';
@@ -50,6 +59,25 @@ import EarningsPage from './pages/driver/EarningsPage';
 // Layout
 import MainLayout from './components/layout/MainLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Root Redirect Component
+const RootRedirect = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return <HomePage />;
+};
 
 function App() {
   return (
@@ -68,26 +96,34 @@ function App() {
                       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
                       {/* Main app routes */}
-                      <Route element={<MainLayout />}>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/restaurants" element={<RestaurantsPage />} />
-                      <Route path="/restaurant/:slug" element={<RestaurantDetailPage />} />
-                      <Route path="/search" element={<SearchPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/food/:foodId" element={<FoodDetailPage />} />
-                      <Route path="/category/:categoryId" element={<CategoryDetailPage />} />
-                      <Route path="/fast-food" element={<FastFoodPage />} />
-                      
-                      {/* Protected routes */}
-                      <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-                      <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
-                      <Route path="/order/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
-                      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                      <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
-                      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-                      <Route path="/addresses" element={<ProtectedRoute><SavedAddressesPage /></ProtectedRoute>} />
-                      <Route path="/payment-methods" element={<ProtectedRoute><PaymentMethodsPage /></ProtectedRoute>} />
-                    </Route>
+                      <Route element={<ErrorBoundary><MainLayout /></ErrorBoundary>}>
+                        <Route path="/" element={<RootRedirect />} />
+                        <Route path="/restaurants" element={<RestaurantsPage />} />
+                        <Route path="/restaurant/:slug" element={<RestaurantDetailPage />} />
+                        <Route path="/search" element={<SearchPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/food/:foodId" element={<FoodDetailPage />} />
+                        <Route path="/category/:categoryId" element={<CategoryDetailPage />} />
+                        {/* Category Foods Pages */}
+                        <Route path="/category/favorite-foods" element={<CategoryFoodsPage />} />
+                        <Route path="/category/special-offers" element={<CategoryFoodsPage />} />
+                        <Route path="/category/fast-food" element={<CategoryFoodsPage />} />
+                        <Route path="/category/discounted" element={<CategoryFoodsPage />} />
+                        <Route path="/fast-food" element={<FastFoodPage />} />
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/contact" element={<ContactPage />} />
+                        
+                        {/* Protected routes */}
+                        <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+                        <Route path="/user/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+                        <Route path="/user/orders" element={<ProtectedRoute><UserOrdersPage /></ProtectedRoute>} />
+                        <Route path="/user/order/:orderId" element={<ProtectedRoute><UserOrderDetailPage /></ProtectedRoute>} />
+                        <Route path="/user/profile" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
+                        <Route path="/user/favorites" element={<ProtectedRoute><UserFavoritesPage /></ProtectedRoute>} />
+                        <Route path="/user/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
+                        <Route path="/user/addresses" element={<ProtectedRoute><UserSavedAddressesPage /></ProtectedRoute>} />
+                        <Route path="/user/payment-methods" element={<ProtectedRoute><UserPaymentMethodsPage /></ProtectedRoute>} />
+                      </Route>
 
                     {/* Admin routes */}
                     <Route 
@@ -98,15 +134,18 @@ function App() {
                         </ProtectedRoute>
                       }
                     >
-                      <Route index element={<DashboardPage />} />
+                      <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                      <Route path="dashboard" element={<AdminDashboardPage />} />
                       <Route path="restaurants" element={<AdminRestaurantsPage />} />
                       <Route path="menu" element={<AdminMenuPage />} />
                       <Route path="orders" element={<AdminOrdersPage />} />
+                      <Route path="drivers" element={<AdminDriversPage />} />
                       <Route path="users" element={<AdminUsersPage />} />
                       <Route path="payments" element={<AdminPaymentsPage />} />
                       <Route path="coupons" element={<AdminCouponsPage />} />
                       <Route path="reports" element={<AdminReportsPage />} />
                       <Route path="settings" element={<AdminSettingsPage />} />
+                      <Route path="profile" element={<AdminProfilePage />} />
                     </Route>
 
                     {/* Driver routes */}

@@ -264,6 +264,76 @@ class AdminService {
       throw new Error(error.response?.data?.message || error.message || 'Failed to fetch customer analytics');
     }
   }
+
+  // Payments
+  async getPayments(): Promise<any[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<any[]>>('/admin/payments');
+      if (response.data.status === 'success' && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch payments:', error);
+      return [];
+    }
+  }
+
+  // Reports
+  async getReports(dateRange: string): Promise<any> {
+    try {
+      const response = await apiClient.get<ApiResponse<any>>(`/admin/reports?range=${dateRange}`);
+      if (response.data.status === 'success' && response.data.data) {
+        return response.data.data;
+      }
+      return { salesData: [], customerData: null };
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+      return { salesData: [], customerData: null };
+    }
+  }
+
+  // Coupons
+  async getCoupons(): Promise<any[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<any[]>>('/admin/coupons');
+      if (response.data.status === 'success' && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch coupons:', error);
+      return [];
+    }
+  }
+
+  // Settings
+  async getSettings(): Promise<any> {
+    try {
+      const response = await apiClient.get<ApiResponse<any>>('/admin/settings');
+      if (response.data.status === 'success' && response.data.data) {
+        return response.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      return null;
+    }
+  }
+
+  // Drivers
+  async getDrivers(): Promise<any[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<any[]>>('/admin/drivers');
+      if (response.data.status === 'success' && response.data.data) {
+        return response.data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch drivers:', error);
+      return [];
+    }
+  }
 }
 
 export const adminService = new AdminService();

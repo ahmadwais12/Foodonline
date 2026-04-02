@@ -1,73 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Package, MapPin, Clock, User, Phone, Euro, Timer } from 'lucide-react';
+import { Package, MapPin, Clock, User, Phone, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-// Mock data
-const newOrders = [
-  {
-    id: '#ORD-3210',
-    customer: 'John Doe',
-    phone: '+1 (555) 123-4567',
-    restaurant: 'Italian Bistro',
-    restaurantAddress: '123 Main St, New York, NY',
-    deliveryAddress: '456 Park Ave, Apt 5B, New York, NY',
-    distance: '2.3 km',
-    estimatedTime: '25 mins',
-    amount: '$24.50',
-    tip: '$3.00',
-    total: '$27.50',
-    timePlaced: '2 mins ago',
-    items: [
-      { name: 'Margherita Pizza', quantity: 1 },
-      { name: 'Caesar Salad', quantity: 1 },
-      { name: 'Garlic Bread', quantity: 2 },
-    ],
-  },
-  {
-    id: '#ORD-3209',
-    customer: 'Jane Smith',
-    phone: '+1 (555) 987-6543',
-    restaurant: 'Burger Palace',
-    restaurantAddress: '789 Broadway, New York, NY',
-    deliveryAddress: '321 5th Ave, New York, NY',
-    distance: '1.8 km',
-    estimatedTime: '20 mins',
-    amount: '$18.75',
-    tip: '$2.50',
-    total: '$21.25',
-    timePlaced: '5 mins ago',
-    items: [
-      { name: 'Classic Burger', quantity: 1 },
-      { name: 'French Fries', quantity: 1 },
-      { name: 'Coke', quantity: 2 },
-    ],
-  },
-  {
-    id: '#ORD-3208',
-    customer: 'Robert Johnson',
-    phone: '+1 (555) 456-7890',
-    restaurant: 'Sushi Corner',
-    restaurantAddress: '555 6th Ave, New York, NY',
-    deliveryAddress: '777 Lexington Ave, New York, NY',
-    distance: '3.1 km',
-    estimatedTime: '30 mins',
-    amount: '$32.00',
-    tip: '$5.00',
-    total: '$37.00',
-    timePlaced: '8 mins ago',
-    items: [
-      { name: 'Salmon Roll', quantity: 2 },
-      { name: 'California Roll', quantity: 1 },
-      { name: 'Miso Soup', quantity: 2 },
-    ],
-  },
-];
-
 export default function NewOrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
   const [acceptedOrder, setAcceptedOrder] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadNewOrders();
+  }, []);
+
+  const loadNewOrders = async () => {
+    try {
+      setLoading(true);
+      // TODO: Replace with actual API call when backend endpoint is ready
+      // const data = await driverService.getNewOrders();
+      // setOrders(data || []);
+      setOrders([]);
+    } catch (error) {
+      console.error('Failed to load new orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAcceptOrder = (orderId: string) => {
     setAcceptedOrder(orderId);
@@ -94,7 +53,7 @@ export default function NewOrdersPage() {
           </div>
         </div>
 
-        {newOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <div className="bg-muted p-4 rounded-full mb-4">
@@ -108,7 +67,7 @@ export default function NewOrdersPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {newOrders.map((order) => (
+            {orders.map((order) => (
               <motion.div
                 key={order.id}
                 initial={{ opacity: 0, y: 20 }}

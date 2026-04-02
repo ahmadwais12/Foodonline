@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Calendar, Filter, Package, CheckCircle, Clock, Euro } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,76 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Mock data
-const deliveryHistory = [
-  {
-    id: '#ORD-3210',
-    customer: 'John Doe',
-    restaurant: 'Italian Bistro',
-    amount: '$27.50',
-    date: '2023-06-15',
-    time: '14:30',
-    status: 'delivered',
-    deliveryTime: '25 min',
-    tip: '$3.00',
-  },
-  {
-    id: '#ORD-3209',
-    customer: 'Jane Smith',
-    restaurant: 'Burger Palace',
-    amount: '$21.25',
-    date: '2023-06-15',
-    time: '12:15',
-    status: 'delivered',
-    deliveryTime: '20 min',
-    tip: '$2.50',
-  },
-  {
-    id: '#ORD-3208',
-    customer: 'Robert Johnson',
-    restaurant: 'Sushi Corner',
-    amount: '$37.00',
-    date: '2023-06-14',
-    time: '19:45',
-    status: 'delivered',
-    deliveryTime: '30 min',
-    tip: '$5.00',
-  },
-  {
-    id: '#ORD-3207',
-    customer: 'Emily Davis',
-    restaurant: 'Pizza Hut',
-    amount: '$16.75',
-    date: '2023-06-14',
-    time: '18:30',
-    status: 'delivered',
-    deliveryTime: '22 min',
-    tip: '$2.00',
-  },
-  {
-    id: '#ORD-3206',
-    customer: 'Michael Wilson',
-    restaurant: 'Taco Fiesta',
-    amount: '$22.50',
-    date: '2023-06-13',
-    time: '20:15',
-    status: 'delivered',
-    deliveryTime: '18 min',
-    tip: '$4.00',
-  },
-  {
-    id: '#ORD-3205',
-    customer: 'Sarah Johnson',
-    restaurant: 'Burger Palace',
-    amount: '$19.80',
-    date: '2023-06-13',
-    time: '19:00',
-    status: 'delivered',
-    deliveryTime: '24 min',
-    tip: '$3.50',
-  },
-];
-
 const statusOptions = [
   { value: 'all', label: 'All Status' },
   { value: 'delivered', label: 'Delivered' },
@@ -98,20 +28,28 @@ const statusOptions = [
 ];
 
 export default function DeliveryHistoryPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState('last_30_days');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('all');
 
-  const filteredDeliveries = deliveryHistory.filter(delivery => {
-    const matchesSearch = 
-      delivery.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      delivery.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      delivery.restaurant.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || delivery.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  useEffect(() => {
+    loadDeliveryHistory();
+  }, []);
+
+  const loadDeliveryHistory = async () => {
+    try {
+      setLoading(true);
+      // TODO: Replace with actual API call when backend endpoint is ready
+      // const data = await driverService.getDeliveryHistory();
+      // setHistory(data || []);
+      setHistory([]);
+    } catch (error) {
+      console.error('Failed to load delivery history:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -158,8 +96,7 @@ export default function DeliveryHistoryPage() {
                 <Input
                   placeholder="Search deliveries..."
                   className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  disabled
                 />
               </div>
               <div className="flex gap-2">
@@ -256,7 +193,7 @@ export default function DeliveryHistoryPage() {
           <CardHeader>
             <CardTitle>Delivery Records</CardTitle>
             <CardDescription>
-              {filteredDeliveries.length} deliveries found
+              {history.length} deliveries found
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -274,28 +211,36 @@ export default function DeliveryHistoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDeliveries.map((delivery) => (
-                  <TableRow key={delivery.id}>
-                    <TableCell className="font-medium">{delivery.id}</TableCell>
-                    <TableCell>{delivery.customer}</TableCell>
-                    <TableCell>{delivery.restaurant}</TableCell>
-                    <TableCell>{delivery.amount}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {delivery.date} {delivery.time}
-                      </div>
+                {history.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No delivery history available
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(delivery.status)}
-                        {getStatusBadge(delivery.status)}
-                      </div>
-                    </TableCell>
-                    <TableCell>{delivery.deliveryTime}</TableCell>
-                    <TableCell className="text-success">{delivery.tip}</TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  history.map((delivery) => (
+                    <TableRow key={delivery.id}>
+                      <TableCell className="font-medium">{delivery.id}</TableCell>
+                      <TableCell>{delivery.customer}</TableCell>
+                      <TableCell>{delivery.restaurant}</TableCell>
+                      <TableCell>{delivery.amount}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          {delivery.date} {delivery.time}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(delivery.status)}
+                          {getStatusBadge(delivery.status)}
+                        </div>
+                      </TableCell>
+                      <TableCell>{delivery.deliveryTime}</TableCell>
+                      <TableCell className="text-success">{delivery.tip}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>

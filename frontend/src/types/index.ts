@@ -40,6 +40,10 @@ export interface MenuItem {
   category: string | null;
   is_vegetarian: boolean;
   is_available: boolean;
+  ingredients?: string;
+  preparation_time?: string;
+  calories?: number;
+  discount_percentage?: number;
   created_at: string;
   updated_at: string;
   restaurant?: Restaurant;
@@ -71,6 +75,8 @@ export interface Order {
   estimated_delivery_time: string | null;
   restaurant?: Restaurant;
   items?: OrderItem[];
+  customer_name?: string;
+  restaurant_name?: string;
 }
 
 export interface OrderItem {
@@ -182,6 +188,8 @@ export interface AuthUser {
 
 export interface UserProfile extends AuthUser {
   created_at?: string;
+  phone?: string;
+  is_active?: boolean;
 }
 
 // Filter types

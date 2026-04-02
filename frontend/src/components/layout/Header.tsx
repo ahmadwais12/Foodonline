@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Heart, Receipt, LogOut, Menu, Search, MapPin, Languages, Star } from 'lucide-react';
+import { ShoppingCart, User, Heart, Receipt, LogOut, Menu, Search, MapPin, Languages, CreditCard, Bell, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,9 +31,7 @@ export default function Header() {
   const [searchSuggestions, setSearchSuggestions] = useState<MenuItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [statistics, setStatistics] = useState({ totalOrders: 0, averageRating: 0 });
-  const [statsLoading, setStatsLoading] = useState(true);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,22 +39,6 @@ export default function Header() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Fetch statistics
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        const stats = await restaurantService.getStatistics();
-        setStatistics(stats);
-      } catch (error) {
-        console.error('Failed to fetch statistics:', error);
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-    
-    fetchStatistics();
   }, []);
 
   const debouncedSearch = (query: string) => {
@@ -121,25 +103,21 @@ export default function Header() {
     navigate('/');
   };
 
+  const getHomePath = () => {
+    if (user?.role === 'admin') return '/admin/dashboard';
+    return '/';
+  };
+
   const NavLinks = () => (
     <>
       {user && (
-        <>
-          <Link 
-            to="/orders" 
-            className="text-foreground/80 hover:text-foreground transition-all duration-300 font-medium relative group"
-          >
-            {t('orders')}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-          </Link>
-          <Link 
-            to="/favorites" 
-            className="text-foreground/80 hover:text-foreground transition-all duration-300 font-medium relative group"
-          >
-            {t('favorites')}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-          </Link>
-        </>
+        <Link 
+          to="/user/orders" 
+          className="text-foreground/80 hover:text-foreground transition-all duration-300 font-medium relative group"
+        >
+          {t('orders')}
+          <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+        </Link>
       )}
     </>
   );
@@ -158,7 +136,7 @@ export default function Header() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to={getHomePath()} className="flex items-center space-x-2">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
                 <img src={logo} alt="FoodDash Logo" className="w-8 h-8 rounded-lg" />
               </div>
@@ -176,18 +154,25 @@ export default function Header() {
           {/* Search Bar - Desktop */}
           <div className="hidden md:block flex-1 max-w-2xl mx-8">
             <form onSubmit={handleSearch} className="relative">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <div className="relative flex items-center">
+                <Search className="absolute left-3 text-muted-foreground h-4 w-4" />
                 <Input
                   type="search"
                   placeholder={t('search_placeholder')}
-                  className="pl-10 w-full rounded-full shadow-lg"
+                  className="pl-10 pr-16 w-full h-12 rounded-full shadow-lg border-primary/20 focus:border-primary transition-all text-base"
                   value={searchQuery}
                   onChange={handleSearchInputChange}
                   onFocus={handleSearchFocus}
                 />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  className="absolute right-1.5 h-9 w-9 rounded-full gradient-primary text-white shadow-xl hover:scale-110 hover:shadow-primary/40 active:scale-95 transition-all duration-300"
+                >
+                  <Search className="h-6 w-6 stroke-[3px]" />
+                </Button>
                 {isLoading && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
                     <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
@@ -232,132 +217,138 @@ export default function Header() {
           </div>
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             {/* Search Icon - Mobile */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden hover:bg-primary hover:text-white h-9 w-9 shrink-0"
               onClick={() => navigate('/search')}
             >
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* Language Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-1">
-                  <Languages className="h-4 w-4" />
-                  <span>{language.toUpperCase()}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setLanguage('en')}>English</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('ps')}>پښتو</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage('fa')}>فارسی</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Language Selector - Desktop */}
+            <div className="hidden md:flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="hover:bg-primary hover:text-white h-9 px-2 gap-1">
+                    <Languages className="h-4 w-4" />
+                    <span className="text-sm">{language.toUpperCase()}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setLanguage('en')}>English</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage('ps')}>پښتو</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage('fa')}>فارسی</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
             {/* Dark Mode Toggle */}
-            <DarkModeToggle />
-              {/* Cart */}
+            <div className="hidden sm:flex items-center">
+              <DarkModeToggle />
+            </div>
+
+            {/* Cart */}
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative hover:bg-primary hover:text-white h-9 w-9 shrink-0"
               onClick={() => navigate('/cart')}
             >
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
-                  {itemCount}
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center z-10">
+                  {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
             </Button>
 
             {/* User Actions */}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <User className="h-5 w-5" />
-                    {itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
-                        {itemCount}
-                      </span>
+            <div className="flex items-center">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative hover:bg-primary hover:text-white h-9 w-9 shrink-0">
+                      <User className="h-5 w-5" />
+                      {itemCount > 0 && (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center z-10">
+                          {itemCount > 9 ? '9+' : itemCount}
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 z-50">
+                    <div className="px-2 py-1.5 text-sm font-medium">
+                      {user.username}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/dashboard" className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>{t('profile')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/orders" className="cursor-pointer">
+                        <Receipt className="mr-2 h-4 w-4" />
+                        <span>{t('orders')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/favorites" className="cursor-pointer">
+                        <Heart className="mr-2 h-4 w-4" />
+                        <span>{t('favorites')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/addresses" className="cursor-pointer">
+                        <MapPin className="mr-2 h-4 w-4" />
+                        <span>{t('addresses')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/payment-methods" className="cursor-pointer">
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        <span>{t('payment_methods')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/user/notifications" className="cursor-pointer">
+                        <Bell className="mr-2 h-4 w-4" />
+                        <span>{t('notifications')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    {user.role === 'admin' && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin/dashboard" className="cursor-pointer">
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>{t('admin_panel')}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5 text-sm font-medium">
-                    {user.username}
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{t('profile')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/orders" className="cursor-pointer">
-                      <Receipt className="mr-2 h-4 w-4" />
-                      <span>{t('orders')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/favorites" className="cursor-pointer">
-                      <Heart className="mr-2 h-4 w-4" />
-                      <span>{t('favorites')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/addresses" className="cursor-pointer">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      <span>{t('addresses')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/payment-methods" className="cursor-pointer">
-                      <span>{t('payment_methods')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/notifications" className="cursor-pointer">
-                      <span>{t('notifications')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  {user.role === 'admin' && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="cursor-pointer">
-                          <span>{t('admin_panel')}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t('logout')}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button onClick={() => navigate('/login')} className="hidden md:flex">
-                {t('sign_in')}
-              </Button>
-            )}
-           
-            
-          
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>{t('logout')}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button onClick={() => navigate('/login')} className="hidden md:flex">
+                  {t('sign_in')}
+                </Button>
+              )}
+            </div>
 
             {/* Mobile Menu */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="hover:bg-primary hover:text-white">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -367,7 +358,7 @@ export default function Header() {
                   <div className="p-4 border-b">
                     <div className="flex items-center justify-between">
                       <Link 
-                        to="/" 
+                        to={getHomePath()} 
                         className="flex items-center space-x-2"
                         onClick={() => setMobileOpen(false)}
                       >
@@ -382,6 +373,7 @@ export default function Header() {
                         variant="ghost" 
                         size="icon" 
                         onClick={() => setMobileOpen(false)}
+                        className="hover:bg-primary hover:text-white"
                       >
                         <span className="text-2xl">×</span>
                       </Button>
@@ -397,18 +389,25 @@ export default function Header() {
                   {/* Search Bar - Mobile Menu */}
                   <div className="p-4 border-b">
                     <form onSubmit={handleSearch} className="mb-4">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 animate-pulse" />
+                      <div className="relative flex items-center">
+                        <Search className="absolute left-3 text-muted-foreground h-4 w-4 animate-pulse" />
                         <Input
                           type="search"
                           placeholder={t('search_placeholder')}
-                          className="pl-10 w-full rounded-full shadow-lg"
+                          className="pl-10 pr-16 w-full h-12 rounded-full shadow-lg border-primary/20 focus:border-primary transition-all text-base"
                           value={searchQuery}
                           onChange={handleSearchInputChange}
                           onFocus={handleSearchFocus}
                         />
+                        <Button 
+                          type="submit" 
+                          size="icon" 
+                          className="absolute right-1.5 h-9 w-9 rounded-full gradient-primary text-white shadow-xl"
+                        >
+                          <Search className="h-6 w-6 stroke-[3px]" />
+                        </Button>
                         {isLoading && (
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="absolute right-16 top-1/2 transform -translate-y-1/2">
                             <div className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"></div>
                           </div>
                         )}
@@ -457,42 +456,42 @@ export default function Header() {
                       {user ? (
                         <>
                           <Link
-                            to="/profile"
+                            to="/user/dashboard"
                             className="text-lg font-medium py-2 px-4 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setMobileOpen(false)}
                           >
                             {t('profile')}
                           </Link>
                           <Link
-                            to="/orders"
+                            to="/user/orders"
                             className="text-lg font-medium py-2 px-4 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setMobileOpen(false)}
                           >
                             {t('orders')}
                           </Link>
                           <Link
-                            to="/favorites"
+                            to="/user/favorites"
                             className="text-lg font-medium py-2 px-4 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setMobileOpen(false)}
                           >
                             {t('favorites')}
                           </Link>
                           <Link
-                            to="/addresses"
+                            to="/user/addresses"
                             className="text-lg font-medium py-2 px-4 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setMobileOpen(false)}
                           >
                             {t('addresses')}
                           </Link>
                           <Link
-                            to="/payment-methods"
+                            to="/user/payment-methods"
                             className="text-lg font-medium py-2 px-4 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setMobileOpen(false)}
                           >
                             {t('payment_methods')}
                           </Link>
                           <Link
-                            to="/notifications"
+                            to="/user/notifications"
                             className="text-lg font-medium py-2 px-4 rounded-lg hover:bg-muted transition-colors"
                             onClick={() => setMobileOpen(false)}
                           >
@@ -507,7 +506,7 @@ export default function Header() {
                           </Link>
                           {user.role === 'admin' && (
                             <Link
-                              to="/admin"
+                              to="/admin/dashboard"
                               className="text-lg font-medium py-2 px-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                               onClick={() => setMobileOpen(false)}
                             >

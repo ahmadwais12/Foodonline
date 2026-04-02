@@ -24,20 +24,21 @@ async function createAdminUser() {
     
     if (existingAdmin.length > 0) {
       console.log('Admin user already exists, updating...');
-      // Update the existing admin user's role to admin
+      // Update the existing admin user's role to admin and password
+      const hashedPassword = await bcrypt.hash('ahmad@wais12', 10);
       await connection.execute(
-        'UPDATE users SET role = ? WHERE email = ?',
-        ['admin', 'ahmadwaissarwari@gmail.com']
+        'UPDATE users SET role = ?, password = ? WHERE email = ?',
+        ['admin', hashedPassword, 'ahmadwaissarwari@gmail.com']
       );
       console.log('Admin user role updated successfully!');
     } else {
       // Hash the password
-      const hashedPassword = await bcrypt.hash('ahmadwais12', 10);
+      const hashedPassword = await bcrypt.hash('ahmad@wais12', 10);
       
       // Insert the new admin user
       const [result] = await connection.execute(
         'INSERT INTO users (email, password, username, role) VALUES (?, ?, ?, ?)',
-        ['ahmadwaissarwari@gmail.com', hashedPassword, 'ahmadadmin', 'admin']
+        ['ahmadwaissarwari@gmail.com', hashedPassword, 'Ahmad Wais', 'admin']
       );
       
       console.log('Admin user created successfully with ID:', result.insertId);
